@@ -1,10 +1,19 @@
+using Microsoft.EntityFrameworkCore;
 using p2_PA1_P2.Components;
+using p2_PA1_P2.DAL;
+using p2_PA1_P2.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+
+var Constr = builder.Configuration.GetConnectionString("SqlConstr");
+builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(Constr));
+
+builder.Services.AddScoped<RegistroService>();
 
 var app = builder.Build();
 
