@@ -1,0 +1,101 @@
+﻿@page 
+
+<PageTitle>Crear Registro</PageTitle>
+
+<EditForm Model="registro" OnValidSubmit="Guardar" FormName="">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Crear Registro</h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label">Id</label>
+                    <InputNumber class="form-control bg-light text-secondary" @bind-Value="" readonly></InputNumber>
+                    <ValidationMessage For="(() => registro.Id)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Fecha</label>
+                    <InputDate class="form-control" @bind-Value=".Fecha"></InputDate>
+                    <ValidationMessage For="(() => registro.Fecha)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="Entrada.NombreCliente"></InputText>
+                    <ValidationMessage For="(() => registro.NombreCliente)" />
+                </div>
+
+                @*Detalles de Huacales*@
+                <div class="border border-success p-3 mt-3">
+                    <h5>Detalles de Huacales</h5>
+
+                   @*Picker para el componente del detalle picker *@
+                  <TipoHuacalesPicker TiposHuacales="ListaTipoHuacales"
+                  TipoId="DetalleSeleccionado.TipoHuacalesId"
+                  Cantidad="DetalleSeleccionado.Cantidad"
+                  Precio="DetalleSeleccionado.Precio"
+                  OnTipoSeleccionado="HandleTipoSeleccionado" />
+                  <hr />
+
+
+
+
+                    <table class="table table-light table-bordered table-hover">
+                        <thead>
+                            <tr class="text-center">
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Nombre</th>
+                                
+                            </tr>
+                        </thead>
+
+                        <tbody class="text-center">
+                            @foreach (var r in Entrada.entradaHuacalesDetalles)
+                            {
+                                <tr>
+                                    <td>@ListaTipoHuacales.FirstOrDefault(t => t.TipoHuacalesId == detalle.TipoHuacalesId)?.Descripcion</td>
+                                    <td>@detalle.Cantidad</td>
+                                    <td>@detalle.Precio</td>
+                                    <td>@(detalle.Cantidad * detalle.Precio)</td>
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-danger bi bi-trash"
+                                                @onclick="() => RemoverDetalle(detalle)">
+                                            Remover
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Importe Total:</strong></label>
+                        <input class="form-control bg-light text-secondary"
+                               value="@Entrada.entradaHuacalesDetalles.Sum(d => d.Cantidad * d.Precio)"
+                               readonly />
+                    </div>
+                </div>
+                </div>
+
+            <div class="card-footer text-center">
+                <a href="/EntradaHuacales/Index" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    Registro registro{ get; set; }
+
+}
