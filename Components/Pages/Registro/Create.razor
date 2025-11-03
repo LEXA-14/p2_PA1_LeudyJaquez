@@ -1,0 +1,143 @@
+﻿
+@page "/Registro/Create"
+@page "/Registro/Edit/{Id:int}"
+@using p2_PA1_P2.Service
+
+@inject RegistroService registroServices
+
+@inject NavigationManager navigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Create</PageTitle>
+
+<EditForm Model="Entrada" OnValidSubmit="Crear">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Crear Entrada</h5>
+			</div>
+
+			<div class="card-body">
+				<div class="mt-3">
+					<label class="form-label">Fecha</label>
+					<InputDate class="form-control" @bind-Value="Entrada.Fecha"></InputDate>
+				</div>
+
+				<div class="mt-3">
+					<label class="form-label">EntradaId</label>
+					<InputNumber class="form-control" @bind-Value="Entrada.IdEntrada" readonly></InputNumber>
+				</div>
+
+				<div class="mt-3">
+					<label class="form-label">Nombre Cliente</label>
+					<InputText class="form-control" @bind-Value="Entrada.NombreCliente"></InputText>
+					<ValidationMessage class="alert text-danger" For="@(() => Entrada.NombreCliente)"></ValidationMessage>
+				</div>
+
+				<div class="mt-3">
+					<label class="form-label">Cantidad General</label>
+					<InputNumber class="form-control" @bind-Value="Entrada.Cantidad" readonly></InputNumber>
+					<ValidationMessage class="alert text-danger" For="@(() => Entrada.Cantidad)"></ValidationMessage>
+				</div>
+
+				<div class="mt-3">
+					<label class="form-label">Precio Promedio</label>
+					<InputNumber class="form-control" @bind-Value="Entrada.Precio" readonly></InputNumber>
+					<ValidationMessage class="alert text-danger" For="@(() => Entrada.Precio)"></ValidationMessage>
+				</div>
+
+				<div class="mt-3">
+					<label class="form-label">Importe Total</label>
+					<input class="form-control" value=@(Entrada.Cantidad* Entrada.Precio) readonly />
+				</div>
+
+				@*Detalle*@
+				<div class="border border-success p-3 mt-3">
+					<h5>Detalles Entrada</h5>
+					<div class="row">
+						<div class="col-4">
+							<label class="form-label">Tipo Huacal</label>
+							<InputSelect @bind-Value="TipoId" class="form-select">
+								<option value="0">Seleccione un tipo</option>
+								@foreach (var tipo in ListaTipos)
+								{
+									<option value="@tipo.TipoId">@tipo.Descripcion (Existencia: @tipo.Existencia)</option>
+								}
+							</InputSelect>
+						</div>
+
+						<div class="col-3">
+							<label class="form-label">Cantiddad</label>
+							<InputNumber class="form-control" @bind-Value="CantidadDetalle"></InputNumber>
+						</div>
+						<div class="col-3">
+							<label class="form-label">Precio</label>
+							<InputNumber class="form-control" @bind-Value="PrecioDetalle"></InputNumber>
+						</div>
+						<div class="col-2 align-self-end">
+							<button type="button" Class="btn btn-primary bi bi-plus-lg w-100" @onclick="AgregarDetalle">Agregar</button>
+						</div>
+					</div>
+
+					@if (Entrada.EntradaHuacalDetalle.Any())
+					{
+						<div class="mt-3">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Tipo Huacal</th>
+										<th>Cantidad</th>
+										<th>Precio</th>
+										<th>Importe</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var detalle in Entrada.EntradaHuacalDetalle)
+									{
+										<tr>
+											<td>@(ListaTipos.FirstOrDefault(t => t.TipoId == detalle.TipoId)?.Descripcion ?? "N/A")</td>
+											<td>@detalle.Cantidad</td>
+											<td>@detalle.Precio.ToString("C")</td>
+											<td>@((detalle.Cantidad * detalle.Precio).ToString("C"))</td>
+											<td>
+												<button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="() => EliminarDetalle(detalle)">Remover</button>
+											</td>
+										</tr>
+
+									}
+								</tbody>
+							</table>
+							<label class="float-end"><strong>Cantidad de Detalles: </strong>@Entrada.EntradaHuacalDetalle.Count</label>
+						</div>
+					}
+				</div>
+			</div>
+
+			<div class="card-footer text-center">
+				
+				<a href="/Registro/Index" class="btn btn-secondary bi bi-arrow-left">Volver</a>
+				<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
+				@if (Id > 0)
+				{
+					<button type="button" class="btn btn-danger bi bi-trash" @onclick="Eliminar">
+						Eliminar</button>
+				}
+			</div>
+		</div>
+
+	</div>
+</EditForm>
+
+@code {
+
+	public Pedido Entrada{ get; set; }
+	[Parameter] public int Id{ get; set; }
+
+
+	//Agregar detalle eliminar detalle
+	//guardar//eliminar // recalcular totales // Limpiar totales
+
+}
