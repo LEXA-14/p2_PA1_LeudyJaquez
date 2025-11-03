@@ -57,24 +57,30 @@
                             <th>ID</th>
                             <th>Fecha</th>
                             <th>Nombre</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Importe</th>
+                            <th>Opciones</th>
                             
 
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var registro in )
+                        @foreach (var pedido in ListaPedidos)
                         {
                             <tr>
-                                <td>@registro.IdEntrada</td>
-                                <td>@registro.NombreCliente</td>
-                                <th>@registro.Fecha</th>
-                                <th> @registro.entradaHuacalesDetalles.Sum(d => d.Cantidad)</th>
+                                <td>@pedido.PedidoId</td>
+                                <td>@pedido.NombreCliente</td>
+                                <th>@pedido.Fecha</th>
+                                <th> @pedido.detalle.Sum(d => d.Cantidad)</th>
+                                <th>@pedido.detalle.Average(p=>p.Precio)</th>
+                                <th>@pedido.detalle.Sum(i=>i.Cantidad * i.Precio)</th>
                                
 
 
 
                                 <td class="text-center">
-                                    <a href="//Edit/@registro." class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                    <a href="/Pedido/Edit/@pedido.PedidoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
                                 </td>
 
                             </tr>
@@ -85,8 +91,8 @@
 
             </div>
             <div class="card-footer d-flex justify-content-between">
-                <label>Cantidad de Entradas:@.Count()</label>
-                <label>Cantidad de Huacales:@.Sum()</label>
+                <label>Conteo:@ListaPedidos.Count()</label>
+                <label>Total:@ListaPedidos.Sum(p=>p.Total)</label>
                
             </div>
         </div>
@@ -136,8 +142,19 @@
         if (!string.IsNullOrWhiteSpace(ValorFiltro))
         {
             if(Filtro=="ID" && int.TryParse(ValorFiltro,out int id)){
-                
-                prelista=prelista.Where
+
+                prelista = prelista.Where(p => p.PedidoId == id).ToList();
+            }
+
+            if (Filtro == "Cantidad" && int.TryParse(ValorFiltro, out int cantidad))
+            {
+
+                prelista = prelista.Where(p => p.PedidoId == cantidad).ToList();
+            }
+
+            if (Filtro == "Persona")
+            {
+                prelista = prelista.Where(p => p.NombreCliente.ToLower().Contains(ValorFiltro.ToLower())).ToList();
             }
         }
     }
