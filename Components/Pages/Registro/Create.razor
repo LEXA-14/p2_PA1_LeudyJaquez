@@ -1,17 +1,16 @@
-﻿
-@page "/Registro/Create"
-@page "/Registro/Edit/{Id:int}"
+﻿@page "/Pedido/Createt"
+@page "/Pedido/Edit/{Id:int}"
 @using p2_PA1_P2.Service
 
-@inject RegistroService registroServices
+@inject PedidoService pedidoService
 
 @inject NavigationManager navigationManager
 
 @rendermode InteractiveServer
 
-<PageTitle>Create</PageTitle>
+<PageTitle>@(Id>0 ? "Editar Pedido" : "Crear Pedido")</PageTitle>
 
-<EditForm Model="Entrada" OnValidSubmit="Crear">
+<EditForm Model="pedido" OnValidSubmit="Guardar">
 	<DataAnnotationsValidator />
 	<div class="container">
 		<div class="card shadow-lg">
@@ -20,68 +19,63 @@
 			</div>
 
 			<div class="card-body">
+				
+
 				<div class="mt-3">
 					<label class="form-label">Fecha</label>
-					<InputDate class="form-control" @bind-Value="Entrada.Fecha"></InputDate>
+					<InputDate class="form-control" @bind-Value="pedido.Fecha"></InputDate>
 				</div>
 
 				<div class="mt-3">
 					<label class="form-label">EntradaId</label>
-					<InputNumber class="form-control" @bind-Value="Entrada.IdEntrada" readonly></InputNumber>
+					<InputNumber class="form-control" @bind-Value="pedido.PedidoId" readonly></InputNumber>
 				</div>
 
 				<div class="mt-3">
 					<label class="form-label">Nombre Cliente</label>
-					<InputText class="form-control" @bind-Value="Entrada.NombreCliente"></InputText>
-					<ValidationMessage class="alert text-danger" For="@(() => Entrada.NombreCliente)"></ValidationMessage>
+					<InputText class="form-control" @bind-Value="pedido.NombreCliente"></InputText>
+					<ValidationMessage class="alert text-danger" For="@(() => pedido.NombreCliente)"></ValidationMessage>
 				</div>
 
-				<div class="mt-3">
-					<label class="form-label">Cantidad General</label>
-					<InputNumber class="form-control" @bind-Value="Entrada.Cantidad" readonly></InputNumber>
-					<ValidationMessage class="alert text-danger" For="@(() => Entrada.Cantidad)"></ValidationMessage>
-				</div>
-
-				<div class="mt-3">
-					<label class="form-label">Precio Promedio</label>
-					<InputNumber class="form-control" @bind-Value="Entrada.Precio" readonly></InputNumber>
-					<ValidationMessage class="alert text-danger" For="@(() => Entrada.Precio)"></ValidationMessage>
-				</div>
-
-				<div class="mt-3">
-					<label class="form-label">Importe Total</label>
-					<input class="form-control" value=@(Entrada.Cantidad* Entrada.Precio) readonly />
-				</div>
 
 				@*Detalle*@
 				<div class="border border-success p-3 mt-3">
 					<h5>Detalles Entrada</h5>
+					@if (!string.IsNullOrEmpty(errorMessage))
+					{
+						<div class="alert alert-danger" role="alert">
+							@errorMessage
+							<button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+						</div>
+					}
 					<div class="row">
 						<div class="col-4">
-							<label class="form-label">Tipo Huacal</label>
-							<InputSelect @bind-Value="TipoId" class="form-select">
+							
+							<label class="form-label">Componentes</label>
+							<InputSelect @bind-Value="componenteIdDetalle" class="form-select">
 								<option value="0">Seleccione un tipo</option>
-								@foreach (var tipo in ListaTipos)
+								@foreach (var tipo in ListaComponentes)
 								{
-									<option value="@tipo.TipoId">@tipo.Descripcion (Existencia: @tipo.Existencia)</option>
+									<option value="@tipo.ComponenteId">@tipo.Descripcion (Existencia: @tipo.Existencia)</option>
 								}
 							</InputSelect>
 						</div>
 
 						<div class="col-3">
-							<label class="form-label">Cantiddad</label>
-							<InputNumber class="form-control" @bind-Value="CantidadDetalle"></InputNumber>
+							<label class="form-label">Cantidad</label>
+							<InputNumber class="form-control" @bind-Value="cantidad"></InputNumber>
 						</div>
 						<div class="col-3">
 							<label class="form-label">Precio</label>
-							<InputNumber class="form-control" @bind-Value="PrecioDetalle"></InputNumber>
+							<input type="text" class="form-control" value="@(ListaComponentes.FirstOrDefault(c => c.ComponenteId == componenteIdDetalle)?.Precio.ToString("C") ?? "")"
+										 readonly /> 
 						</div>
 						<div class="col-2 align-self-end">
-							<button type="button" Class="btn btn-primary bi bi-plus-lg w-100" @onclick="AgregarDetalle">Agregar</button>
+							<button type="button" Class="btn btn-success bi bi-plus " @onclick="AgregarComponente">Agregar</button>
 						</div>
 					</div>
 
-					@if (Entrada.EntradaHuacalDetalle.Any())
+					@if (pedido.detalle.Any())
 					{
 						<div class="mt-3">
 							<table class="table table-bordered table-striped">
@@ -95,22 +89,27 @@
 									</tr>
 								</thead>
 								<tbody>
-									@foreach (var detalle in Entrada.EntradaHuacalDetalle)
+									@foreach (var detalle in pedido.detalle)
 									{
 										<tr>
-											<td>@(ListaTipos.FirstOrDefault(t => t.TipoId == detalle.TipoId)?.Descripcion ?? "N/A")</td>
+											<td>@(ListaComponentes.FirstOrDefault(t => t.ComponenteId == detalle.ComponenteId)?.Descripcion ?? "N/A")</td>
 											<td>@detalle.Cantidad</td>
-											<td>@detalle.Precio.ToString("C")</td>
+											
+										    <td>@detalle.Precio.ToString("C")</td> 
 											<td>@((detalle.Cantidad * detalle.Precio).ToString("C"))</td>
 											<td>
-												<button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="() => EliminarDetalle(detalle)">Remover</button>
+												<button type="button" class="btn btn-danger bi bi-trash" @onclick="() => EliminarDetalle(detalle)">Remover</button>
 											</td>
 										</tr>
 
 									}
 								</tbody>
 							</table>
-							<label class="float-end"><strong>Cantidad de Detalles: </strong>@Entrada.EntradaHuacalDetalle.Count</label>
+							<label class="float-end"><strong>Cantidad de Detalles: </strong>@pedido.detalle.Count</label>
+							<div class="mt-3">
+								<label class="form-label">Importe Total</label>
+								<input class="form-control" value=@pedido.Total.ToString("C") readonly />
+							</div>
 						</div>
 					}
 				</div>
@@ -118,7 +117,7 @@
 
 			<div class="card-footer text-center">
 				
-				<a href="/Registro/Index" class="btn btn-secondary bi bi-arrow-left">Volver</a>
+				<a href="/Pedido/Index" class="btn btn-secondary bi bi-arrow-left">Volver</a>
 				<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
 				@if (Id > 0)
 				{
@@ -129,15 +128,149 @@
 		</div>
 
 	</div>
-</EditForm>
+</EditForm> 
 
 @code {
+	[Parameter] public int Id { get; set; }
+	public Pedido pedido { get; set; }
 
-	public Pedido Entrada{ get; set; }
-	[Parameter] public int Id{ get; set; }
+	public int cantidad{ get; set; }
+	public PedidoDetalle pedidoDetalle{ get; set; }
+	public double precioDetalle{ get; set; }
+	public int componenteIdDetalle{ get; set; }
+	public string errorMessage{ get; set; }
+
+	public List<Componente> ListaComponentes { get; set; } = new List<Componente>();
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		ListaComponentes = await pedidoService.GetListaComponente();
+
+		if (Id > 0)
+		{
+			pedido = await pedidoService.BuscarId(Id);
+		}
+		else
+		{
+			pedido=new Pedido
+				{
+					Fecha = DateTime.Now,
+					detalle = new List<PedidoDetalle>()
+				};
+		}
+	}
+
 
 
 	//Agregar detalle eliminar detalle
+
+	public async Task AgregarComponente()
+	{
+		if (cantidad <= 0)
+		{
+			errorMessage = "Cantidad de ser mayor que 0";
+			return;
+		}
+		if (componenteIdDetalle <= 0)
+		{
+			errorMessage = "Debe Seleccionar un Componente";
+			return;
+		}
+
+		var componente = ListaComponentes.FirstOrDefault(c => c.ComponenteId == componenteIdDetalle);
+
+		if (componente == null)
+		{
+			errorMessage = "Componente no enocntrado";
+			return;
+		}
+
+		var cantidadAgregada = pedido.detalle.Where(d => d.ComponenteId == componenteIdDetalle).
+		Sum(d => d.Cantidad);
+
+		if(cantidadAgregada + cantidad > componente.Existencia)
+		{
+			errorMessage = $"Inventario insuficiente. Quedan {componente.Existencia} y ya pedidas {cantidadAgregada}";
+			return;
+		}
+
+		//sumar cantidades si se repiten 
+		var detalleExistente = pedido.detalle.FirstOrDefault(d => d.ComponenteId == componenteIdDetalle);
+
+		if (detalleExistente != null)
+		{
+			detalleExistente.Cantidad += cantidad;
+		}
+		else
+		{
+			var nuevoComponente = new PedidoDetalle
+				{
+					Cantidad = cantidad,
+					ComponenteId = componenteIdDetalle,
+					Precio =(double) componente.Precio
+
+				};
+			pedido.detalle.Add(nuevoComponente);
+		}
+
+		RecalcularTotales();
+	 LimpiarTotales();
+
+	}
 	//guardar//eliminar // recalcular totales // Limpiar totales
 
+	private async Task EliminarDetalle(PedidoDetalle detalle)
+	{
+		pedido.detalle.Remove(detalle);
+		RecalcularTotales();
+	}
+
+
+	private async Task Guardar()
+	{
+		if (!pedido.detalle.Any())
+		{
+			errorMessage = "Debe haber al menos un detalle";
+			return;
+		}
+
+		var guardado = await pedidoService.Guardar(pedido);
+
+		if (guardado)
+		{
+			navigationManager.NavigateTo("/Pedido/Index");
+		}
+		else
+		{
+			errorMessage = "No se pudo Guardar correctamente";
+		}
+	}
+
+	private async Task Eliminar()
+	{
+
+		var eliminado = await pedidoService.Eliminar(pedido.PedidoId);
+
+		if (eliminado)
+		{
+			navigationManager.NavigateTo("/Pedido/Index");
+		}
+		else
+		{
+			errorMessage = "No se pudo Eliminar correctamente";
+		}
+	}
+	private async Task RecalcularTotales()
+	{
+		pedido.Total = pedido.detalle.Sum(d => d.Cantidad * d.Precio);
+
+	}
+
+	private async Task LimpiarTotales()
+	{
+		componenteIdDetalle = 0;
+		cantidad = 0;
+		precioDetalle = 0;
+	}
 }

@@ -8,6 +8,7 @@ public class Componente
     [Key]
     public int ComponenteId { get; set; }
 
+    [Required(ErrorMessage = "Este campo no puede estar vacio")]
     public string Descripcion { get; set; } = string.Empty;
 
     public double Precio { get; set; }

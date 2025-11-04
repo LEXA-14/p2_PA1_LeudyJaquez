@@ -14,4 +14,12 @@
     </PackageReference>
   </ItemGroup>
 
+	<ItemGroup>
+	  <None Update="Data\P2DB.db">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>	   
+
+
+
 </Project>

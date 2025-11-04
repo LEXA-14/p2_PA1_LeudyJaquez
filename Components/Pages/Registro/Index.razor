@@ -1,4 +1,7 @@
-﻿@* 
+﻿@page "/Pedido/Index"
+@using p2_PA1_P2.Service
+
+@inject PedidoService pedidoService
 @rendermode InteractiveServer
 
 <PageTitle>Registro Index</PageTitle>
@@ -8,7 +11,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <div class="card-title"></div>
             <h5 class="card-title">Index </h5>
-            <a href="/EntradaHuacales/Create" class="btn btn-primary"><span class="bi bi-plus-square"></span>Crear</a>
+            <a href="/Pedido/Createt" class="btn btn-primary"><span class="bi bi-plus-square"></span>Crear</a>
         </div>
 
 
@@ -34,7 +37,7 @@
                         <option value="" selected disabled>Selecciona una opci&oacute;n</option>
                         <option value="ID">ID</option>
                         <option value="Persona">Nombre</option>
-                        <option value="Cantidad">Cantidad</option>
+                      
                        
                     </InputSelect>
 
@@ -54,24 +57,31 @@
                             <th>ID</th>
                             <th>Fecha</th>
                             <th>Nombre</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Importe</th>
+                            <th>Opciones</th>
                             
 
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var registro in )
+                        @foreach (var pedido in ListaPedidos)
                         {
                             <tr>
-                                <td>@registro.IdEntrada</td>
-                                <td>@registro.NombreCliente</td>
-                                <th>@registro.Fecha</th>
-                                <th> @registro.entradaHuacalesDetalles.Sum(d => d.Cantidad)</th>
+                                <td>@pedido.PedidoId</td>
+                                <th>@pedido.Fecha</th>
+                                <td>@pedido.NombreCliente</td>
+                                
+                                <th> @pedido.detalle.Sum(d => d.Cantidad)</th>
+                                <th>@pedido.detalle.Average(p=>p.Precio)</th>
+                                <th>@pedido.detalle.Sum(i=>i.Cantidad * i.Precio)</th>
                                
 
 
 
                                 <td class="text-center">
-                                    <a href="//Edit/@registro." class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                    <a href="/Pedido/Edit/@pedido.PedidoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
                                 </td>
 
                             </tr>
@@ -82,8 +92,8 @@
 
             </div>
             <div class="card-footer d-flex justify-content-between">
-                <label>Cantidad de Entradas:@.Count()</label>
-                <label>Cantidad de Huacales:@.Sum()</label>
+                <label>Conteo:@ListaPedidos.Count()</label>
+                <label>Total:@ListaPedidos.Sum(p=>p.Total)</label>
                
             </div>
         </div>
@@ -93,7 +103,9 @@
 
 @code {
 
+    public Pedido pedido{ get; set; }
 
+    public List<Pedido> ListaPedidos { get; set; } = new List<Pedido>();
 
     public string Filtro { get; set; }
     public string ValorFiltro { get; set; }
@@ -101,7 +113,48 @@
     public DateTime? desde { get; set; } = null;
     public DateTime? hasta { get; set; } = null;
 
- 
-} *@
+    //inicializar y busqueda con prelista
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaPedidos = await pedidoService.GetLista(l => true);
+    }
+
+    public async Task Buscar()
+    {
+        var prelista = await pedidoService.GetLista(l => true);
+
+        if(desde.HasValue && hasta.HasValue)
+        {
+            prelista = prelista.Where(p => p.Fecha >= desde && p.Fecha <= hasta).ToList();
+        }
+
+        if(desde.HasValue && hasta == null)
+        {
+            prelista = prelista.Where(p => p.Fecha<= hasta).ToList();
+        }
+
+
+        if (hasta.HasValue && desde == null)
+        {
+            prelista = prelista.Where(p => p.Fecha<=hasta).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if(Filtro=="ID" && int.TryParse(ValorFiltro,out int id)){
+
+                prelista = prelista.Where(p => p.PedidoId == id).ToList();
+            }
+
+            if (Filtro == "Persona")
+            {
+                prelista = prelista.Where(p => p.NombreCliente.ToLower().Contains(ValorFiltro.ToLower())).ToList();
+            }
+        }
+        ListaPedidos = prelista;
+    }
+
+} 
 
 
