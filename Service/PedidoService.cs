@@ -63,6 +63,7 @@ public class PedidoService(IDbContextFactory<Contexto> dbFactory)
         contexto.Update(pedido);
         return await contexto.SaveChangesAsync() > 0;
 
+
     }
 
     private async Task<bool> Insertar( Pedido pedido)
@@ -88,7 +89,7 @@ public class PedidoService(IDbContextFactory<Contexto> dbFactory)
 
         if (pedido == null) return false;
 
-        await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Resta);
+        await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Suma);
 
         contexto.PedidoDetalle.RemoveRange(pedido.detalle);
         contexto.Componentes.Remove(pedido);
