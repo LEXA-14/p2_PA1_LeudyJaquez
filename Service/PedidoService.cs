@@ -9,7 +9,7 @@ public class PedidoService(IDbContextFactory<Contexto> dbFactory)
 {
     public async Task<bool> Guardar(Pedido pedido)
     {
-        if (!await Existe(pedido.NombreCliente))
+        if (!await Existe(pedido.PedidoId))
         {
             return await Insertar(pedido);
 
@@ -52,13 +52,13 @@ public class PedidoService(IDbContextFactory<Contexto> dbFactory)
 
         if (pedidoOriginal == null) return false;
 
-        await AfectarPedido(pedidoOriginal.detalle.ToArray(), TipoOperacion.Resta);
+        await AfectarPedido(pedidoOriginal.detalle.ToArray(), TipoOperacion.Suma);
 
         var detalleAnterior=await contexto.PedidoDetalle.Where(d=>d.PedidoId==pedido.PedidoId).ToListAsync();
 
         contexto.PedidoDetalle.RemoveRange(detalleAnterior);
 
-        await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Suma);
+        await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Resta);
 
         contexto.Update(pedido);
         return await contexto.SaveChangesAsync() > 0;
@@ -70,13 +70,13 @@ public class PedidoService(IDbContextFactory<Contexto> dbFactory)
     {
         await using var contexto = await dbFactory.CreateDbContextAsync();
         contexto.Add(pedido);
-        await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Suma);
+        await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Resta);
         return await contexto.SaveChangesAsync() > 0;
     }
-    private async Task<bool> Existe(string nombre)
+    private async Task<bool> Existe(int id)
     {
         await using var contexto = await dbFactory.CreateDbContextAsync();
-        return await contexto.Pedido.AnyAsync(a => a.NombreCliente.ToLower() == nombre.ToLower());
+        return await contexto.Pedido.AnyAsync(a => a.PedidoId == id);
     }
     //eliminar
 
@@ -84,15 +84,15 @@ public class PedidoService(IDbContextFactory<Contexto> dbFactory)
     {
         await using var contexto = await dbFactory.CreateDbContextAsync();
 
-        var pedido = await contexto.Componentes.Include(d => d.detalle)
-             .FirstOrDefaultAsync(e => e.ComponenteId == id);
+        var pedido = await contexto.Pedido.Include(d => d.detalle)
+             .FirstOrDefaultAsync(e => e.PedidoId == id);
 
         if (pedido == null) return false;
 
         await AfectarPedido(pedido.detalle.ToArray(), TipoOperacion.Suma);
 
         contexto.PedidoDetalle.RemoveRange(pedido.detalle);
-        contexto.Componentes.Remove(pedido);
+        contexto.Pedido.Remove(pedido);
 
         return await contexto.SaveChangesAsync() > 0;
 

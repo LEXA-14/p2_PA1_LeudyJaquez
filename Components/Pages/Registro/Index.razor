@@ -37,7 +37,7 @@
                         <option value="" selected disabled>Selecciona una opci&oacute;n</option>
                         <option value="ID">ID</option>
                         <option value="Persona">Nombre</option>
-                        <option value="Cantidad">Cantidad</option>
+                      
                        
                     </InputSelect>
 
@@ -70,8 +70,9 @@
                         {
                             <tr>
                                 <td>@pedido.PedidoId</td>
-                                <td>@pedido.NombreCliente</td>
                                 <th>@pedido.Fecha</th>
+                                <td>@pedido.NombreCliente</td>
+                                
                                 <th> @pedido.detalle.Sum(d => d.Cantidad)</th>
                                 <th>@pedido.detalle.Average(p=>p.Precio)</th>
                                 <th>@pedido.detalle.Sum(i=>i.Cantidad * i.Precio)</th>
@@ -144,12 +145,6 @@
             if(Filtro=="ID" && int.TryParse(ValorFiltro,out int id)){
 
                 prelista = prelista.Where(p => p.PedidoId == id).ToList();
-            }
-
-            if (Filtro == "Cantidad" && int.TryParse(ValorFiltro, out int cantidad))
-            {
-
-                prelista = prelista.Where(p => p.PedidoId == cantidad).ToList();
             }
 
             if (Filtro == "Persona")

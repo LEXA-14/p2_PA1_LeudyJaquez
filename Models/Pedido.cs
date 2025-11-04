@@ -10,8 +10,9 @@ public class Pedido
 
     [Required(ErrorMessage = "Este campo es requerido")]
 
-    public DateTime Fecha = DateTime.Now;
+    public DateTime Fecha { get; set; } = DateTime.Now;
 
+    [Required(ErrorMessage = "Este campo no puede estar vacio")]
     public string NombreCliente { get; set; }
     public double Total { get; set; }
 
